@@ -11,8 +11,9 @@ empty.to_csv("./dataset/cleaned_step_1.csv",index=False)
 #process data
 for chunk in tqdm(data_reader,ascii=True):
     #clean up
-    chunk = chunk.dropna()
+    
     chunk = chunk.filter(["reviewText", "overall"])
+    chunk = chunk.dropna()
     chunk = chunk.reset_index(drop=True)
     #save
     chunk.to_csv("./dataset/cleaned_step_1.csv",mode='a', header=False,index=False)
