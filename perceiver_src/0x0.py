@@ -117,7 +117,7 @@ class self_multi_headed(nn.Module):
                                                 input -> heads -> linear -> output + output_residual
         """
         self.heads = nn.ModuleList([self_attention_head(input_size,input_size,input_size) for i in range(amount_heads)])
-        self.linear = nn.Linear(input_size*amount_heads,input_size)
+        self.linear = nn.Linear(input_size*amount_heads,input_size,bias=False)
 
 
     def forward(self,x):
@@ -127,15 +127,24 @@ class self_multi_headed(nn.Module):
 
 
 class cross_multi_headed(nn.Module):
-    def __init__(self):
+    def __init__(self,latent_size,embedding_size,amount_heads):
         super().__init__()
+        """
+        note that embedding_size = |embedding_vec|
+
+        also note that this cross attention module has a residual connection
+        """
+
+        self.heads = nn.ModuleList([cross_attention_head(latent_size,embedding_size,embedding_size,latent_size) for i in range(amount_heads)])
+        self.linear = nn.Linear(latent_size*amount_heads,latent_size,bias=False)
     
     def forward(self,latent,text):
-        pass 
+
+        return self.linear(torch.cat([head(latent,text) for head in self.heads],dim=1)) + latent 
+
 
 
 
 if __name__ == "__main__":
     #vocab = vocabulary(10)
     #print(vocab("hello world"))
-    pass 
