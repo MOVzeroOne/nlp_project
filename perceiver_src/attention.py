@@ -1,44 +1,11 @@
-import pandas as pd 
 import torch 
 import torch.nn as nn  
 import torch.optim as optim
 from torch.utils.data import Dataset, DataLoader,IterableDataset
 from tqdm import tqdm 
-from transformers import AutoTokenizer
 import math
 
-class vocabulary(nn.Module):
-    def __init__(self, embedding_dim):
-        super().__init__()
-        self.tokenizer = AutoTokenizer.from_pretrained('bert-base-cased')
-        self.vocab = nn.Embedding(num_embeddings=self.tokenizer.vocab_size, embedding_dim=embedding_dim)
-        
 
-    def forward(self,text):
-        """
-        input: string 
-        output: embeddings (vectors)
-        """
-        tokens = torch.tensor(self.tokenizer(text)["input_ids"])
-
-        return self.vocab(tokens)
-
-
-class dataReader(IterableDataset):
-    def __init__(self,vocab):
-        self.dataset = pd.read_csv("./dataset/cleaned_step_1.csv",chunksize=1) 
-        self.vocab = vocab
-
-    def __iter__(self):
-        
-        for data in self.dataset:
-            text = data["reviewText"].item()
-            rating = data["overall"].item()
-            
-            vectors = self.vocab(text)
-
-            yield vectors,rating
-        
 
 class self_attention_head(nn.Module):
     """
@@ -142,9 +109,3 @@ class cross_multi_headed(nn.Module):
 
         return self.linear(torch.cat([head(latent,text) for head in self.heads],dim=1)) + latent 
 
-
-
-
-if __name__ == "__main__":
-    #vocab = vocabulary(10)
-    #print(vocab("hello world"))
