@@ -19,23 +19,22 @@ class vocabulary(nn.Module):
         input: string 
         output: embeddings (vectors)
         """
-        tokens = torch.tensor(self.tokenizer(text)["input_ids"])
+        tokens = torch.tensor(self.tokenizer(str(text))["input_ids"])
 
         return self.vocab(tokens)
 
 
 class dataReader(IterableDataset):
-    def __init__(self,vocab):
-        self.dataset = pd.read_csv("./dataset/cleaned_step_1.csv",chunksize=1) 
+    def __init__(self,vocab,path="./dataset/cleaned_step_1.csv"):
+        self.dataset = pd.read_csv(path,chunksize=1) 
         self.vocab = vocab
-
     def __iter__(self):
         
-        for data in self.dataset:
+        for data in self.dataset: 
             text = data["reviewText"].item()
             rating = data["overall"].item()
             
-            vectors = self.vocab(text)
+            vectors = self.vocab(str(text))
 
             yield vectors,rating
         
