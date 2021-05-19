@@ -8,8 +8,17 @@ from transformers import AutoTokenizer
 import math
 
 class vocabulary(nn.Module):
-    def __init__(self, embedding_dim):
+    def __init__(self, embedding_dim,max_length_sentence= 100,padding='max_length'):
         super().__init__()
+
+        """
+        padding(variable is  a string)options below:
+        -"max_length" (pads with zeros till max length is reached)
+        -'longest' (pads with zeros to the size of the longest in that specific batch)
+        """
+
+        self.max_length_sentence=max_length_sentence 
+        self.padding = padding
         self.tokenizer = AutoTokenizer.from_pretrained('bert-base-cased')
         self.vocab = nn.Embedding(num_embeddings=self.tokenizer.vocab_size, embedding_dim=embedding_dim)
         
@@ -19,8 +28,7 @@ class vocabulary(nn.Module):
         input: string 
         output: embeddings (vectors)
         """
-        tokens = torch.tensor(self.tokenizer(str(text))["input_ids"])
-
+        tokens = torch.tensor(self.tokenizer.encode(str(text),max_length=self.max_length_sentence,padding=self.padding ))
         return self.vocab(tokens)
 
 

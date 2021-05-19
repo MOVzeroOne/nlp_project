@@ -8,9 +8,9 @@ so that every file has sentences of lengths up to a specified number
 """
 
 
-data = pd.read_csv("./dataset/cleaned_step_1.csv",chunksize=10) 
+data = pd.read_csv("./dataset/cleaned_step_1.csv",chunksize=100000) 
 voc = AutoTokenizer.from_pretrained('bert-base-cased')
-split_list = [100,200,400,800,1600,3200,6400,12800,25600] #in increasing order
+split_list = [100,200,400,800,1600] #in increasing order
 
 
 dataset_paths = []
@@ -36,6 +36,7 @@ for chunk in tqdm(data,ascii=True):
     #rating = line["overall"]
 
     
+    chunk["reviewText"] = chunk.applymap(str)
 
     chunk["length"] = [len(tokens) for tokens in voc(chunk["reviewText"].to_list())['input_ids']]
     

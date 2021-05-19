@@ -7,7 +7,7 @@ import math
 
 
 class PositionalEncoding(nn.Module):
-    #https://pytorch.org/tutorials/beginner/transformer_tutorial.html
+    #code from https://pytorch.org/tutorials/beginner/transformer_tutorial.html
     def __init__(self, d_model, max_len=5000):
         super().__init__()
 
