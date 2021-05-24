@@ -6,9 +6,10 @@ from torch.utils.data import Dataset, DataLoader,IterableDataset
 from tqdm import tqdm 
 from transformers import AutoTokenizer
 import math
+from collections import deque 
 
 class vocabulary(nn.Module):
-    def __init__(self, embedding_dim,max_length_sentence= 100,padding='max_length'):
+    def __init__(self, embedding_dim,max_length_sentence= 100,padding='max_length',truncation=True):
         super().__init__()
 
         """
@@ -19,8 +20,10 @@ class vocabulary(nn.Module):
 
         self.max_length_sentence=max_length_sentence 
         self.padding = padding
+        self.truncation = truncation
+        self.embedding_dim = embedding_dim
         self.tokenizer = AutoTokenizer.from_pretrained('bert-base-cased')
-        self.vocab = nn.Embedding(num_embeddings=self.tokenizer.vocab_size, embedding_dim=embedding_dim)
+        self.vocab = nn.Embedding(num_embeddings=self.tokenizer.vocab_size, embedding_dim=self.embedding_dim)
         
 
     def forward(self,text):
@@ -28,7 +31,9 @@ class vocabulary(nn.Module):
         input: string 
         output: embeddings (vectors)
         """
-        tokens = torch.tensor(self.tokenizer.encode(str(text),max_length=self.max_length_sentence,padding=self.padding ))
+        tokens = torch.tensor(self.tokenizer.encode(str(text),max_length=self.max_length_sentence,padding=self.padding ,truncation =self.truncation))
+
+    
         return self.vocab(tokens)
 
 
@@ -36,12 +41,16 @@ class dataReader(IterableDataset):
     def __init__(self,vocab,path="./dataset/cleaned_step_1.csv"):
         self.dataset = pd.read_csv(path,chunksize=1) 
         self.vocab = vocab
+
+
+
     def __iter__(self):
         
         for data in self.dataset: 
             text = data["reviewText"].item()
             rating = data["overall"].item()
             
+
             vectors = self.vocab(str(text))
 
             yield vectors,rating

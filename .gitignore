@@ -1,3 +1,5 @@
 
 *.json
 *.csv
+perceiver_src/runs/May19_16-31-08_nexus/events.out.tfevents.1621434670.nexus.12876.0
+perceiver_src/runs/May19_16-35-26_nexus/events.out.tfevents.1621434928.nexus.4020.0
