@@ -34,6 +34,6 @@ for file_name in tqdm(files,ascii=True):
     #splitting step
     train, test = train_test_split(df, test_size=0.1)
 
-    train.to_csv("./dataset/processed_splits/train_" + file_name+"_count_"+str(train.count()["reviewText"]),index=False)
-    test.to_csv("./dataset/processed_splits/test_" + file_name+"_count_"+str(test.count()["reviewText"]),index=False)
+    train.to_csv("./dataset/processed_splits/train_" +"count_"+str(train.count()["reviewText"]) +"_" + file_name,index=False)
+    test.to_csv("./dataset/processed_splits/test_" +"count_"+str(test.count()["reviewText"]) + "_"+ file_name ,index=False)
     print("done saving")
