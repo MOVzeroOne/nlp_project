@@ -1,12 +1,11 @@
 from tqdm import tqdm 
 import pandas as pd 
 
-data_reader = pd.read_json("./dataset/All_Amazon_Review_5.json",chunksize=100000,lines=True)
+data_reader = pd.read_json("./dataset/Grocery_and_Gourmet_Food.json",chunksize=100000,lines=True)
 
 #create empty file (or overwrite file with new empty file)
 empty = pd.DataFrame({"reviewText":[],"overall":[]})
 empty.to_csv("./dataset/cleaned_step_1.csv",index=False)
-
 
 #process data
 for chunk in tqdm(data_reader,ascii=True):

@@ -69,10 +69,15 @@ class metric(nn.Module):
 
 if __name__ == "__main__":
     #hyperparameters
+    path_train = "./dataset/processed_splits/train_cleaned_100.csv"
+    path_test = "./dataset/processed_splits/test_cleaned_100.csv"
     embedding_dim = 128
     max_length_sentence = 100
     epochs = 100
     lr=0.01
+    batch_size = 10
+    steps_till_test = 100 #amount of steps before running on test data 
+    amount_steps_test = 10 #amount_steps_test* batch_data = amount tests
     #init 
     writer = SummaryWriter()
 
@@ -82,14 +87,18 @@ if __name__ == "__main__":
 
     vocab = vocabulary(embedding_dim=embedding_dim,max_length_sentence=max_length_sentence)
     
-    data = dataReader(vocab,path="./dataset/splits/cleaned_100.csv")
-    loader = DataLoader(data,batch_size=10,num_workers=0)
+    train_data = dataReader(vocab,path=path_train)
+    test_data = dataReader(vocab,path=path_test)
+    
+    train_loader = DataLoader(train_data,batch_size=batch_size,num_workers=0)
+    test_loader = DataLoader(test_data,batch_size=batch_size,num_workers=0)
+
     pos_encoding = PositionalEncoding(d_model=embedding_dim,max_len=max_length_sentence)
 
     step = 0
     for i in range(epochs):
-        for input_data, label in tqdm(loader,ascii=True):
-            step += 1
+        for input_data, label in tqdm(train_loader,ascii=True,desc="train"):
+            
             optimizer.zero_grad()
             #data_with_pos= pos_encoding(input_data) #only needed for a transformer (as attention losses the abitlity to encode position)
             
@@ -106,5 +115,37 @@ if __name__ == "__main__":
 
             optimizer.step()
             
+            if(step %steps_till_test == 0):
+                #run on test data 
+                diff_list = torch.tensor([]) #difference label and output 
+                
+                test_step = 0
+                with torch.no_grad():
+                    for input_data, label in tqdm(test_loader,ascii=True,desc="test"):
+                        
+                        output = network(input_data)
+                        diff = torch.abs((torch.argmax(output,dim=1)+1)-label)
+                        diff_list = torch.cat((diff_list,diff))
+                        test_step += 1
+
+                        if(test_step % amount_steps_test == 0):
+                            break
+                
+                diff_zero = torch.sum(diff_list == 0)
+                diff_one = torch.sum(diff_list == 1)
+                diff_two = torch.sum(diff_list == 2)
+                diff_three =torch.sum(diff_list == 3)
+                diff_four =  torch.sum(diff_list == 4)
+
+                writer.add_scalar("diff_zero_test",diff_zero,step)
+                writer.add_scalar("diff_one_test",diff_one,step)
+                writer.add_scalar("diff_two_test",diff_two,step)
+                writer.add_scalar("diff_three_test",diff_three,step)
+                writer.add_scalar("diff_four_test",diff_four,step)
+
+                writer.add_scalar("mean error test",torch.mean(diff_list),step)
+                writer.add_scalar("median error test",torch.median(diff_list),step)
+                writer.add_scalar("std error test",torch.std(diff_list),step)
             
-        
+            #increment step
+            step += 1
