@@ -8,7 +8,10 @@ does splitting and blancing the data
 """
 
 
-
+#hyper param
+test_size = 0.1 #0.1 is 10 % test size 90 % train size
+shuffle = True
+#program
 
 path = "./dataset/splits/" 
 files = os.listdir(path)
@@ -32,7 +35,7 @@ for file_name in tqdm(files,ascii=True):
     df = pd.concat([one_df.sample(n = count),two_df.sample(n = count),three_df.sample(n = count),four_df.sample(n = count),five_df.sample(n = count)])
     print("done balancing")
     #splitting step
-    train, test = train_test_split(df, test_size=0.1)
+    train, test = train_test_split(df, test_size=test_size,shuffle=shuffle)
 
     train.to_csv("./dataset/processed_splits/train_" +"count_"+str(train.count()["reviewText"]) +"_" + file_name,index=False)
     test.to_csv("./dataset/processed_splits/test_" +"count_"+str(test.count()["reviewText"]) + "_"+ file_name ,index=False)
