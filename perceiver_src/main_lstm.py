@@ -77,8 +77,8 @@ class metric(nn.Module):
 
 if __name__ == "__main__":
     #hyperparameters
-    path_train = "./dataset/processed_splits/train_cleaned_100.csv"
-    path_test = "./dataset/processed_splits/test_cleaned_100.csv"
+    path_train = "./dataset/processed_splits/train_count_837463_cleaned_100.csv"
+    path_test = "./dataset/processed_splits/test_count_93052_cleaned_100.csv"
     embedding_dim = 128
     max_length_sentence = 100
     epochs = 100
