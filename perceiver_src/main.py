@@ -34,11 +34,16 @@ class cross_entopy(nn.Module):
         e = 0.0000000000001
         return torch.sum(-torch.log(output.gather(1,label)+e))/output.size(0)
 
+
+def entropy(output):
+    return -torch.sum(torch.log2(output)*output,dim=1)
+
 class metric(nn.Module):
     def __init__(self,writer,max_memory=1000):
         super().__init__()
         self.max_memory = max_memory
         self.mem = deque(maxlen=self.max_memory)
+        self.entropy_mem = deque(maxlen=self.max_memory)
         self.writer = writer
         self.step = 0
     
@@ -48,15 +53,20 @@ class metric(nn.Module):
     def forward(self,output,label):
 
         self.mem.extend(torch.abs((torch.argmax(output,dim=1)+1)-label))
-
+        self.entropy_mem.extend(entropy(output))
         memory_contents = torch.tensor(self.mem,dtype=torch.float)
+        entropy_memory_contents = torch.tensor(self.entropy_mem,dtype=torch.float)
 
         if(len(self.mem) == self.max_memory):
             mean = torch.mean(memory_contents)
             std = torch.std(memory_contents)
+            mean_entropy = torch.mean(entropy_memory_contents)
+            std_entropy = torch.std(entropy_memory_contents)
 
             self.writer.add_scalar("metric_train/mean_error",mean,self.step)
             self.writer.add_scalar("metric_train/std_error",std,self.step)
+            self.writer.add_scalar("entropy_train/mean",mean_entropy,self.step)
+            self.writer.add_scalar("entropy_train/std",std_entropy,self.step)
 
             return (mean,std)
         else:
@@ -116,7 +126,7 @@ if __name__ == "__main__":
             if(step %steps_till_test == 0):
                 #run on test data 
                 diff_list = torch.tensor([]) #difference label and output 
-                
+                entropy_list = torch.tensor([])
                 test_step = 0
                 with torch.no_grad():
                     for input_data, label in tqdm(test_loader,ascii=True,desc="test"):
@@ -124,6 +134,10 @@ if __name__ == "__main__":
                         output = network(input_data)
                         diff = torch.abs((torch.argmax(output,dim=1)+1)-label)
                         diff_list = torch.cat((diff_list,diff))
+
+                        entropy_test = entropy(output)
+                        entropy_list = torch.cat((entropy_list, entropy_test))
+
                         test_step += 1
 
                         if(test_step % amount_steps_test == 0):
@@ -143,6 +157,8 @@ if __name__ == "__main__":
                 
                 writer.add_scalar("metric_test/mean_error",torch.mean(diff_list),step)
                 writer.add_scalar("metric_test/std_error",torch.std(diff_list),step)
-            
+
+                writer.add_scalar("entropy_test/mean",torch.mean(entropy_list),step)
+                writer.add_scalar("entropy_test/std",torch.std(entropy_list),step)
             #increment step
             step += 1
