@@ -53,16 +53,14 @@ class metric(nn.Module):
 
         if(len(self.mem) == self.max_memory):
             mean = torch.mean(memory_contents)
-            median = torch.median(memory_contents)
             std = torch.std(memory_contents)
 
-            self.writer.add_scalar("mean error",mean,self.step)
-            self.writer.add_scalar("median error",median,self.step)
-            self.writer.add_scalar("std error",std,self.step)
+            self.writer.add_scalar("metric_train/mean_error",mean,self.step)
+            self.writer.add_scalar("metric_train/std_error",std,self.step)
 
-            return (mean,median,std)
+            return (mean,std)
         else:
-            return (None,None, None)
+            return (None, None)
         
 
 
@@ -137,15 +135,14 @@ if __name__ == "__main__":
                 diff_three =torch.sum(diff_list == 3)
                 diff_four =  torch.sum(diff_list == 4)
 
-                writer.add_scalar("diff_zero_test",diff_zero,step)
-                writer.add_scalar("diff_one_test",diff_one,step)
-                writer.add_scalar("diff_two_test",diff_two,step)
-                writer.add_scalar("diff_three_test",diff_three,step)
-                writer.add_scalar("diff_four_test",diff_four,step)
-
-                writer.add_scalar("mean error test",torch.mean(diff_list),step)
-                writer.add_scalar("median error test",torch.median(diff_list),step)
-                writer.add_scalar("std error test",torch.std(diff_list),step)
+                writer.add_scalar("diff_test/zero",diff_zero,step)
+                writer.add_scalar("diff_test/one",diff_one,step)
+                writer.add_scalar("diff_test/two",diff_two,step)
+                writer.add_scalar("diff_test/three",diff_three,step)
+                writer.add_scalar("diff_test/four",diff_four,step)
+                
+                writer.add_scalar("metric_test/mean_error",torch.mean(diff_list),step)
+                writer.add_scalar("metric_test/std_error",torch.std(diff_list),step)
             
             #increment step
             step += 1
