@@ -155,12 +155,16 @@ if __name__ == "__main__":
                 diff_two = torch.sum(diff_list == 2)
                 diff_three =torch.sum(diff_list == 3)
                 diff_four =  torch.sum(diff_list == 4)
+                diff_total = diff_zero + diff_one + diff_two + diff_three + diff_four
+
 
                 writer.add_scalar("diff_test/zero",diff_zero,step)
                 writer.add_scalar("diff_test/one",diff_one,step)
                 writer.add_scalar("diff_test/two",diff_two,step)
                 writer.add_scalar("diff_test/three",diff_three,step)
                 writer.add_scalar("diff_test/four",diff_four,step)
+                writer.add_scalar("diff_test/total",diff_total,step)
+
                 
                 writer.add_scalar("metric_test/mean_error",torch.mean(diff_list),step)
                 writer.add_scalar("metric_test/std_error",torch.std(diff_list),step)

@@ -6,7 +6,7 @@ from activation_functions import mish
 from attention import cross_multi_headed, self_multi_headed
 
 class perceiver(nn.Module):
-    def __init__(self,output_size=5,recursion_depth = 2, latent_space_sequence_length=20,max_sequence_length=100,embedding_dim = 128):
+    def __init__(self,output_size=5,recursion_depth = 3, latent_space_sequence_length=50,max_sequence_length=100,embedding_dim = 128):
         super().__init__()
         self.max_sequence_length = max_sequence_length
         self.embedding_dim = embedding_dim
