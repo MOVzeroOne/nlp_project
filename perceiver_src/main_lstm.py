@@ -9,7 +9,8 @@ from positional_encoding import PositionalEncoding
 from torch.utils.tensorboard import SummaryWriter
 from tqdm import tqdm 
 from collections import deque 
-
+import random
+import numpy as np 
 
 class lstm_net(nn.Module):
     def __init__(self,input_size=128,hidden_size=256,output_size=5):
@@ -76,6 +77,12 @@ class metric(nn.Module):
 
 
 if __name__ == "__main__":
+    #reproducability
+    torch.manual_seed(0)
+    random.seed(0)
+    np.random.seed(0)
+    
+
     #hyperparameters
     path_train = "./dataset/processed_splits/train_count_837463_cleaned_100.csv"
     path_test = "./dataset/processed_splits/test_count_93052_cleaned_100.csv"
@@ -98,15 +105,15 @@ if __name__ == "__main__":
     train_data = dataReader(vocab,path=path_train)
     test_data = dataReader(vocab,path=path_test)
     
-    train_loader = DataLoader(train_data,batch_size=batch_size,num_workers=0)
-    test_loader = DataLoader(test_data,batch_size=batch_size,num_workers=0)
+    train_loader = DataLoader(train_data,batch_size=batch_size,num_workers=0,shuffle=True)
+    test_loader = DataLoader(test_data,batch_size=batch_size,num_workers=0,shuffle=False)
 
     pos_encoding = PositionalEncoding(d_model=embedding_dim,max_len=max_length_sentence)
 
     step = 0
     for i in range(epochs):
         for input_data, label in tqdm(train_loader,ascii=True,desc="train"):
-            
+
             optimizer.zero_grad()
             #data_with_pos= pos_encoding(input_data) #only needed for a transformer (as attention losses the abitlity to encode position)
             

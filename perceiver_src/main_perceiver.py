@@ -9,7 +9,8 @@ from torch.utils.tensorboard import SummaryWriter
 from tqdm import tqdm 
 from collections import deque 
 from models import perceiver
-
+import random 
+import numpy as np
 
 class cross_entopy(nn.Module):
     def __init__(self):
@@ -62,6 +63,11 @@ class metric(nn.Module):
 
 
 if __name__ == "__main__":
+    #reproducability
+    torch.manual_seed(0)
+    random.seed(0)
+    np.random.seed(0)
+    
     #hyperparameters
     path_train = "./dataset/processed_splits/train_count_837463_cleaned_100.csv"
     path_test = "./dataset/processed_splits/test_count_93052_cleaned_100.csv"
@@ -84,8 +90,8 @@ if __name__ == "__main__":
     train_data = dataReader(vocab,path=path_train)
     test_data = dataReader(vocab,path=path_test)
     
-    train_loader = DataLoader(train_data,batch_size=batch_size,num_workers=0)
-    test_loader = DataLoader(test_data,batch_size=batch_size,num_workers=0)
+    train_loader = DataLoader(train_data,batch_size=batch_size,num_workers=0,shuffle=True)
+    test_loader = DataLoader(test_data,batch_size=batch_size,num_workers=0,shuffle=False)
 
     
 
