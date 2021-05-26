@@ -87,7 +87,7 @@ if __name__ == "__main__":
     steps_till_test = 100 #amount of steps before running on test data 
     amount_steps_test = 10 #amount_steps_test* batch_data = amount tests
     #init 
-    writer = SummaryWriter()
+    writer = SummaryWriter(log_dir="runs/lstm")
 
     network = lstm_net()
     optimizer = optim.Adam(network.parameters(),lr=lr)
@@ -118,7 +118,7 @@ if __name__ == "__main__":
             measurer(output,label)
             
             
-            writer.add_scalar("cross_entropy",loss.detach().item(),step)
+            writer.add_scalar("cross_entropy_loss",loss.detach().item(),step)
 
 
             optimizer.step()

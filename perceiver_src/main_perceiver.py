@@ -73,11 +73,11 @@ if __name__ == "__main__":
     steps_till_test = 100 #amount of steps before running on test data 
     amount_steps_test = 10 #amount_steps_test* batch_data = amount tests
     #init 
-    # writer = SummaryWriter()
+    writer = SummaryWriter(log_dir="runs/perceiver")
 
     network = perceiver()
     optimizer = optim.Adam(network.parameters(),lr=lr)
-    # measurer =  metric(writer)
+    measurer =  metric(writer)
 
     vocab = vocabulary(embedding_dim=embedding_dim,max_length_sentence=max_length_sentence)
     
@@ -96,20 +96,18 @@ if __name__ == "__main__":
             optimizer.zero_grad()
             
             output = network(input_data)
-            exit(0) #NOTE temporary!!!
             loss = cross_entopy()(output,label)
             loss.backward()
             
             
-            # measurer.increment_step()
-            # measurer(output,label)
+            measurer.increment_step()
+            measurer(output,label)
             
             
-            # writer.add_scalar("cross_entropy",loss.detach().item(),step)
+            writer.add_scalar("cross_entropy_loss",loss.detach().item(),step)
 
 
             optimizer.step()
-            """
             if(step %steps_till_test == 0):
                 #run on test data 
                 diff_list = torch.tensor([]) #difference label and output 
@@ -149,4 +147,3 @@ if __name__ == "__main__":
                 writer.add_scalar("entropy_test/std",torch.std(entropy_list),step)
             #increment step
             step += 1
-            """
