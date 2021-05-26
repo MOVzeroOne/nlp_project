@@ -155,7 +155,7 @@ if __name__ == "__main__":
                 diff_two = torch.sum(diff_list == 2)
                 diff_three =torch.sum(diff_list == 3)
                 diff_four =  torch.sum(diff_list == 4)
-                diff_total = diff_zero + diff_one + diff_two + diff_three + diff_four
+                diff_total = 0*diff_zero + 1*diff_one + 2*diff_two + 3*diff_three + 4*diff_four
 
 
                 writer.add_scalar("diff_test/zero",diff_zero,step)

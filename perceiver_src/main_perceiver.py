@@ -77,7 +77,7 @@ if __name__ == "__main__":
     lr=0.01
     batch_size = 10
     steps_till_test = 100 #amount of steps before running on test data 
-    amount_steps_test = 10 #amount_steps_test* batch_data = amount tests
+    amount_steps_test = 100 #amount_steps_test* batch_data = amount tests
     #init 
     writer = SummaryWriter(log_dir="runs/perceiver")
 
@@ -139,7 +139,7 @@ if __name__ == "__main__":
                 diff_two = torch.sum(diff_list == 2)
                 diff_three =torch.sum(diff_list == 3)
                 diff_four =  torch.sum(diff_list == 4)
-                diff_total = diff_zero + diff_one + diff_two + diff_three + diff_four
+                diff_total = 0*diff_zero + 1*diff_one + 2*diff_two + 3*diff_three + 4*diff_four
 
 
                 writer.add_scalar("diff_test/zero",diff_zero,step)
