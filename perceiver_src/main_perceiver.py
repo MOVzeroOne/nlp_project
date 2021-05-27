@@ -1,6 +1,7 @@
 import torch 
 import torch.nn as nn 
 import torch.optim as optim 
+import torch.nn.utils as utils
 from torch.utils.data import DataLoader
 import matplotlib.pyplot as plt 
 from dataloader import dataReader, vocabulary
@@ -11,6 +12,7 @@ from collections import deque
 from models import perceiver
 import random 
 import numpy as np
+from itertools import chain
 
 class cross_entopy(nn.Module):
     def __init__(self):
@@ -23,7 +25,8 @@ class cross_entopy(nn.Module):
 
 
 def entropy(output):
-    return -torch.sum(torch.log2(output)*output,dim=1)
+    e = 0.0000000000001
+    return -torch.sum(torch.log2(output+e)*output,dim=1)
 
 class metric(nn.Module):
     def __init__(self,writer,max_memory=1000):
@@ -60,7 +63,19 @@ class metric(nn.Module):
             return (None, None)
         
 
+def visualize_model_weights(writer,model,step,path_catogory="model_param/"):
+    #visualize weights
+    for named_param in model.named_parameters():
+        name = named_param[0]
+        param = named_param[1]
+        writer.add_histogram(path_catogory+name, param, step)
 
+def visualize_model_gradients(writer,model,step,path_catogory="model_grads/"):
+    #visualize gradients
+    for named_param in model.named_parameters():
+        name = named_param[0]
+        param_grad = named_param[1].grad
+        writer.add_histogram(path_catogory+name, param_grad, step)
 
 if __name__ == "__main__":
     #reproducability
@@ -73,19 +88,21 @@ if __name__ == "__main__":
     path_test = "./dataset/processed_splits/test_count_93052_cleaned_100.csv"
     embedding_dim = 128
     max_length_sentence = 100
-    epochs = 100
-    lr=0.01
-    batch_size = 10
-    steps_till_test = 100 #amount of steps before running on test data 
-    amount_steps_test = 100 #amount_steps_test* batch_data = amount tests
+    epochs = 1000
+    lr=0.001
+    batch_size = 100
+    steps_till_test = 10 #50 #amount of steps before running on test data 
+    amount_steps_test = 10 #amount_steps_test* batch_data = amount tests
+    steps_till_weight_log = 10
+    steps_till_grad_log = steps_till_weight_log
     #init 
     writer = SummaryWriter(log_dir="runs/perceiver")
-
-    network = perceiver()
-    optimizer = optim.Adam(network.parameters(),lr=lr)
+    vocab = vocabulary(embedding_dim=embedding_dim,max_length_sentence=max_length_sentence)
+    network = perceiver(batch_size=batch_size)
+    optimizer = optim.Adam(chain(network.parameters(),vocab.parameters()),lr=lr)
     measurer =  metric(writer)
 
-    vocab = vocabulary(embedding_dim=embedding_dim,max_length_sentence=max_length_sentence)
+    
     
     train_data = dataReader(vocab,path=path_train)
     test_data = dataReader(vocab,path=path_test)
@@ -102,7 +119,8 @@ if __name__ == "__main__":
             optimizer.zero_grad()
             
             output = network(input_data)
-            loss = cross_entopy()(output,label)
+            
+            loss = nn.CrossEntropyLoss()(output,label-1)
             loss.backward()
             
             
@@ -111,9 +129,27 @@ if __name__ == "__main__":
             
             
             writer.add_scalar("cross_entropy_loss",loss.detach().item(),step)
-
+            #gradient clipping
+            utils.clip_grad_norm_(network.parameters(), 1)
+            utils.clip_grad_norm_(vocab.parameters(), 1) 
 
             optimizer.step()
+            
+            if(step %steps_till_weight_log == 0):
+                #log weights
+                visualize_model_weights(writer,network,step,path_catogory="network_param/")
+                visualize_model_weights(writer,vocab,step,path_catogory="vocab_param/")
+
+                
+
+            if(step % steps_till_grad_log == 0):
+                #log gradients
+                visualize_model_gradients(writer,network,step,path_catogory="network_grads/")
+                visualize_model_gradients(writer,vocab,step,path_catogory="vocab_grads/")
+
+
+
+
             if(step %steps_till_test == 0):
                 #run on test data 
                 diff_list = torch.tensor([]) #difference label and output 
@@ -156,3 +192,7 @@ if __name__ == "__main__":
                 writer.add_scalar("entropy_test/std",torch.std(entropy_list),step)
             #increment step
             step += 1
+
+            
+    
+
