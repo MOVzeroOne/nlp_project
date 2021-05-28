@@ -46,7 +46,7 @@ class cross_attention_head(nn.Module):
 
     softmax(Q*K^T / d_k)*V
     """
-    def __init__(self,latent_size,queried_array_size,d_k=5,d_v=1):
+    def __init__(self,latent_size,queried_array_size,d_k,d_v):
         super().__init__()
         self.d_k = d_k
         self.d_v = d_v
@@ -59,7 +59,6 @@ class cross_attention_head(nn.Module):
         Q = self.Q_weights(latent)
         K = self.K_weights(text).T
         V = self.V_weights(text)
-
         attention_map = torch.softmax(torch.matmul(Q,K)/math.sqrt(self.d_k),dim=1)
         return torch.matmul(attention_map,V)
 

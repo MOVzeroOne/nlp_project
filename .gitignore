@@ -3,3 +3,6 @@
 *.csv
 perceiver_src/runs/May19_16-31-08_nexus/events.out.tfevents.1621434670.nexus.12876.0
 perceiver_src/runs/May19_16-35-26_nexus/events.out.tfevents.1621434928.nexus.4020.0
+perceiver_src/runs_report/lstm/events.out.tfevents.1622133633.nexus.11524.0
+perceiver_src/runs_report/perceiver/events.out.tfevents.1622123405.nexus.10788.0
+perceiver_src/runs_report/perceiver/events.out.tfevents.1622154055.nexus.7996.0

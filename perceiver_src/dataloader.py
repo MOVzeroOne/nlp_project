@@ -37,15 +37,12 @@ class vocabulary(nn.Module):
         return self.vocab(tokens)
 
 
-class dataReader(IterableDataset):
+class dataIterator(IterableDataset):
     def __init__(self,vocab,path="./dataset/cleaned_step_1.csv"):
         self.dataset = pd.read_csv(path,chunksize=1) 
         self.vocab = vocab
 
-
-
     def __iter__(self):
-        
         for data in self.dataset: 
             text = data["reviewText"].item()
             rating = data["overall"].item()
@@ -54,4 +51,18 @@ class dataReader(IterableDataset):
             vectors = self.vocab(str(text))
 
             yield vectors,rating
-        
+ 
+class dataReader(Dataset):
+    def __init__(self,vocab,path="./dataset/cleaned_step_1.csv"):
+        self.dataset = pd.read_csv(path) 
+        self.vocab = vocab
+
+    def __getitem__(self,index):
+        text = self.dataset["reviewText"].iloc[index]
+        rating = self.dataset["overall"].iloc[index]
+        vectors = self.vocab(str(text))
+
+        return vectors,rating
+    
+    def __len__(self):
+        return len(self.dataset.index)
