@@ -98,7 +98,7 @@ if __name__ == "__main__":
     #init 
     writer = SummaryWriter(log_dir="runs/perceiver")
     vocab = vocabulary(embedding_dim=embedding_dim,max_length_sentence=max_length_sentence)
-    network = perceiver(batch_size=batch_size)
+    network = perceiver()
     optimizer = optim.Adam(chain(network.parameters(),vocab.parameters()),lr=lr)
     measurer =  metric(writer)
 

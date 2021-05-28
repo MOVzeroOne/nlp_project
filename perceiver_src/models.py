@@ -6,7 +6,7 @@ from activation_functions import mish
 from attention import cross_multi_headed, self_multi_headed
 
 class perceiver(nn.Module):
-    def __init__(self,share_parameters=False,batch_size=10,output_size=5,recursion_depth = 7, latent_space_sequence_length=50,max_sequence_length=100,embedding_dim = 128):
+    def __init__(self,share_parameters=False,output_size=5,recursion_depth = 7, latent_space_sequence_length=50,max_sequence_length=100,embedding_dim = 128):
         super().__init__()
         self.max_sequence_length = max_sequence_length
         self.embedding_dim = embedding_dim
@@ -24,12 +24,13 @@ class perceiver(nn.Module):
             
 
         self.end_block = nn.Linear(embedding_dim,output_size)
-        self.latent_text = nn.Parameter(torch.randn(batch_size,self.latent_space_sequence_length,self.latent_space_size)) #batch,sequence_length,embedding_size
+        self.latent_text = nn.Parameter(torch.randn(self.latent_space_sequence_length,self.latent_space_size)) #batch,sequence_length,embedding_size
     
     def forward(self,x):
    
         data_with_pos = self.pos_encoding(x) #only needed for a transformer (as attention losses the abitlity to encode position)
-        latent_vectors = self.latent_text
+        batch_size= x.size(0)
+        latent_vectors = torch.repeat_interleave(self.latent_text.unsqueeze(dim=0),batch_size,dim=0)
         
         if(self.share_parameters):
             for i in range(self.recursion_depth):
