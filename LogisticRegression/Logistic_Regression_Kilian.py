@@ -124,7 +124,7 @@ if __name__ == '__main__':
     }
 
     # Load data
-    df_original = pd.read_json("All_Beauty2.json")
+    df_original = pd.read_json("Food.json")
     df_original = df_original[['overall', 'reviewText']]
     mask = df_original['overall'] != 3
     df = df_original[mask]
