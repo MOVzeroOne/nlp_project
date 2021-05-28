@@ -143,7 +143,8 @@ if __name__ == '__main__':
     fig.show()
     """
 
-    ngram_size = 3
+    ngram_size = 1
+    
     print('Ngram length: ' + str(ngram_size))
     avergage_accuracy = 0
     avergage_fscore = 0
