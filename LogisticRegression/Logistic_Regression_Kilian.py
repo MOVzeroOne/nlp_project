@@ -124,7 +124,7 @@ if __name__ == '__main__':
     }
 
     # Load data
-    df_original = pd.read_json("/Users/kiliankramer/Desktop/All_Beauty2.json")
+    df_original = pd.read_json("All_Beauty2.json")
     df_original = df_original[['overall', 'reviewText']]
     mask = df_original['overall'] != 3
     df = df_original[mask]
@@ -144,7 +144,7 @@ if __name__ == '__main__':
     """
 
     ngram_size = 1
-    
+
     print('Ngram length: ' + str(ngram_size))
     avergage_accuracy = 0
     avergage_fscore = 0
