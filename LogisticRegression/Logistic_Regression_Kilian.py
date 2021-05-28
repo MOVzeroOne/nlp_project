@@ -45,14 +45,8 @@ def lemmatize_words(review):
     lemm = nltk.stem.WordNetLemmatizer()
     df['lemmatized_text'] = list(map(lambda word: list(map(lemm.lemmatize, word)), df.Cleaned_reviews))
 
-# Apply Logistic Regression
-def logistic_regression(X_tr, y_tr, X_test, y_test, _C=1.0):
-    model = LogisticRegression(C=_C).fit(X_tr, y_tr)
-    score = model.score(X_test, y_test)
-    return model, score
-
 if __name__ == '__main__':
-    # A list of contractions: http://stackoverflow.com/questions/19790188/expanding-english-language-contractions-in-python
+    # A list of contractions from: http://stackoverflow.com/questions/19790188/expanding-english-language-contractions-in-python
     contractions = {
         "ain't": "am not",
         "aren't": "are not",
@@ -130,8 +124,13 @@ if __name__ == '__main__':
     }
 
     # Load data
-    df = pd.read_json("/Users/kiliankramer/Desktop/All_Beauty2.json")
-    df = df[['overall', 'reviewText']]
+    df_original = pd.read_json("/Users/kiliankramer/Desktop/All_Beauty2.json")
+    df_original = df_original[['overall', 'reviewText']]
+    mask = df_original['overall'] != 3
+    df = df_original[mask]
+    # Splitting dataset into positive (4,5 stars) and negative (1-2 stars) reviwes
+    df['Label'] = 0
+    df.loc[df['overall'] > 3, ['Label']] = 1
     df = df.dropna()
 
     """
@@ -144,28 +143,37 @@ if __name__ == '__main__':
     fig.show()
     """
 
-    # Splitting dataset into positive (4,5 stars) and negative (1-3 stars) reviwes
-    df['Label'] = 0
-    df.loc[df['overall'] > 3, ['Label']] = 1
+    ngram_size = 3
+    print('Ngram length: ' + str(ngram_size))
+    avergage_accuracy = 0
+    avergage_fscore = 0
+    # Do 10 samples with each 10k reviews and only 1,2 and 4,5 stars reviews
+    for i in range(10):
+        df = df.sample(n=10000)
+        # Clean reviews
+        df['Cleaned_reviews'] = list(map(clean_reviews, df.reviewText))
+        lemmatize_words(df.Cleaned_reviews)
+        # Split dataset into train and test set
+        training_data, test_data = sklearn.model_selection.train_test_split(df, train_size=0.8, random_state=42)
+        y_train = training_data['Label']
+        y_test = test_data['Label']
+        # Create bag of words vector
+        bow_transform = CountVectorizer(tokenizer=lambda doc: doc, ngram_range=[ngram_size, ngram_size], lowercase=False)
+        x_train = bow_transform.fit_transform(training_data['Cleaned_reviews'])
+        x_test = bow_transform.transform(test_data['Cleaned_reviews'])
+        # Train model
+        model = LogisticRegression(C=1).fit(x_train, y_train)
+        # Print results
+        accuracy = model.score(x_test, y_test)
+        predict_test = model.predict(x_test)
+        fscore = sklearn.metrics.f1_score(predict_test, y_test)
+        print('Run', str(i+1), ': test prediction score (accuracy):', accuracy)
+        print('Run', str(i + 1), ': test fscore:', fscore)
+        avergage_accuracy += accuracy
+        avergage_fscore += fscore
 
-    # Clean reviews
-    df['Cleaned_reviews'] = list(map(clean_reviews, df.reviewText))
-    lemmatize_words(df.Cleaned_reviews)
-
-    # Split dataset into train and test set
-    training_data, test_data = sklearn.model_selection.train_test_split(df, train_size=0.7, random_state=42)
-    y_train = training_data['Label']
-    y_test = test_data['Label']
-
-    # Create bag of words vector
-    bow_transform = CountVectorizer(tokenizer=lambda doc: doc, ngram_range=[1, 1], lowercase=False)
-    x_train = bow_transform.fit_transform(training_data['Cleaned_reviews'])
-    x_test = bow_transform.transform(test_data['Cleaned_reviews'])
-
-    # Train model
-    model = LogisticRegression(C=1).fit(x_train, y_train)
-
-    # Print results
-    score = model.score(x_test, y_test)
-    print('Test prediction score:', score)
+    avergage_accuracy /= 10
+    avergage_fscore /= 10
+    print('Total average test prediction score (accuracy):', avergage_accuracy)
+    print('Total average test fscore:', avergage_fscore)
 
